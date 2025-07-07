@@ -1,9 +1,88 @@
-import example.pepita
+import example.*
 
-describe "group of tests for pepita" {
+describe "group of tests for streams" {
 
-  test "pepita has initial energy" {
-    assert.equals(100, pepita.energy())
+  const ic = new InfluencerComercial(
+    alias="ic"
+    ,seguidores=100
+    ,carisma=20
+    ,elocuencia=20
+    ,habilidadGaming=0
+    ,tiposStreamAprendidos=#{creativo}
+  )
+  const x = new PlataformaAbierta()
+  const t = new PlataformaSelectiva()
+  const ip = new Profesional(
+    alias="ip"
+    ,seguidores=1200
+    ,carisma=50
+    ,elocuencia=30
+    ,habilidadGaming=10
+    ,tipoStream=gaming
+  )
+  const im = new CreadorMultifacetico(
+    alias="im"
+    ,seguidores=1200
+    ,carisma=50
+    ,elocuencia=30
+    ,habilidadGaming=10
+    ,tipoStream=new Charla(clasificacion=mas13)
+  )
+  const ips = new CreadorMultifacetico(
+    alias="ips"
+    ,seguidores=6200
+    ,carisma=60
+    ,elocuencia=40
+    ,habilidadGaming=50
+    ,tipoStream=new Charla(clasificacion=atp)
+  )
+  method initialize() {
+    x.registrarInfluencer(ic)
+  }
+  test "Registrar un nuevo influencer comercial en una plataforma que ya sabe hacer solo streams creativos" {
+    assert.equals(1, x.influencers().size())
   }
 
+  test "Realizar un stream de adquisición para el streamer comercial de tipo gaming y verificar que ahora conoce 2 tipos de stream" {
+    ic.hacerStreamAdquisicion(gaming)
+    assert.equals(2,ic.tiposStreamAprendidos().size())
+  }
+
+  test "Registrar un nuevo Influencer profesional en una plataforma que haga streams de tipo gaming. Hacer 1 stream y probar que actualiza correctamente los seguidores" {
+    x.registrarInfluencer(ip)
+    x.registrarStream(ip, 2000)
+    assert.equals(1250,ip.seguidores())
+  }
+
+  test "Realizar un nuevo stream en una plataforma (x) con un influencer multifacético que elija un stream de tipo charla +13 (mas13). Probar que actualiza bien los seguidores." {
+    x.registrarInfluencer(im)
+    x.registrarStream(im, 1000)
+    assert.equals(1383,im.seguidores())    
+  }
+
+  test "Obtener la lista de los influencers de una plataforma abierta que califican para pasar a una plataforma selectiva" {
+    x.registrarInfluencer(ip)
+    x.registrarInfluencer(im)
+    assert.equals(#{ip,im},x.influencersImportantes())
+  }
+
+  test "El alias del streamer que haya obtenido la mayor cantidad de audiencia en un stream de una plataforma.
+" {
+    x.registrarInfluencer(ip)
+    x.registrarInfluencer(im)
+    x.registrarStream(ip, 2323)
+    x.registrarStream(im, 3800)
+    x.registrarStream(ic, 4100)
+    x.registrarStream(im, 1500)
+    assert.equals("ic",x.streamerConMayorAudiencia())
+  }
+
+  test "Se verifica que ic no puede ser asignado a una plataforma selectica" {
+    assert.throwsExceptionWithMessage("no se admite el influencer", {t.registrarInfluencer(ic)})
+  }
+
+  test "El influencer ips si puede registrarse en la plataforma selectiva t" {
+    t.registrarInfluencer(ips)
+    assert.that(t.influencers().contains(ips))
+  }
 }
